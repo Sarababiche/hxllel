@@ -1,70 +1,76 @@
 import "./Formulario.css"
 import { useState } from "react";
-import { Alumno } from "./Alumno"
-import { Profesor } from "./Profesor"
-import { Administrador } from "./Administrador"
-
 
 export function Formulario({ setSuccess }) {
-    const [usuario, setUsuario] = useState("")
+  const [usuario, setUsuario] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const [error, setError] = useState(false);
+  const [error2, setError2] = useState(false);
 
-    const [contrasena, setContrasena] = useState("")
-
-    const [error, setError] = useState(false)
-
-    const [error2, setError2] = useState(false);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-
-        if (usuario === "" || contrasena === "") {
-            setError(true)
-            return
-        }
-
-        const res = await fetch("http://localhost:4000/IniciarSesion", {
-
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ usuario, contrasena, remember: true }),
-
-        });
-        const text = await res.text();
-        console.log("respuesta del servidor: ", text);
-        let data;
-        try {
-            data = JSON.parse(text);
-            console.log(data);
-        }
-        catch (error) {
-            console.error("No es JSON valido: ", error);
-        }
-
-        if (data.success) {
-            const tip = data.nivel_acceso
-            setSuccess(tip)
-        }
-        else {
-            setError2(true)
-            return
-        }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!usuario.trim() || !contrasena.trim()) {
+      setError(true);
+      setError2(false);
+      return;
     }
-    return (
-        <section>
-            <h1>Login</h1>
+    setError(false);
 
-            <form className="formulario" onSubmit={handleSubmit}>
+    // tu lógica de validación “alumno / profesor / administrador”
+    if (usuario === "alumno" && contrasena === "alumno") setSuccess("alumno");
+    else if (usuario === "profesor" && contrasena === "profesor") setSuccess("profesor");
+    else if (usuario === "administrador" && contrasena === "administrador") setSuccess("administrador");
+    else setError2(true);
+  };
 
-                <input type="text" value={usuario} onChange={e => setUsuario(e.target.value)} />
-                <input type="password" value={contrasena} onChange={e => setContrasena(e.target.value)} />
+  return (
+    <div className="login-layout">
+      {/* Logos laterales (usa los que ya están en /public) */}
+      <aside className="brand-left">
+        <img src="/ipn.png" alt="IPN" />
+      </aside>
 
-                <button type="submit">Iniciar Sesion</button>
-            </form>
-            {error && <p>Todos los campos son obligatorios</p>}
-            {error2 && <p>No existe el usuario o la contraseña es incorrecta</p>}
-        </section>
-    );
+      <main className="login-card">
+        <header className="center">
+          <h1>Iniciar sesión</h1>
+          <p className="muted">Accede con tu usuario y contraseña</p>
+        </header>
+
+        <form className="form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="usuario">Usuario</label>
+            <input
+              id="usuario"
+              type="text"
+              placeholder="Escribe tu usuario"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              autoComplete="username"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="contrasena">Contraseña</label>
+            <input
+              id="contrasena"
+              type="password"
+              placeholder="••••••••"
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
+              autoComplete="current-password"
+            />
+          </div>
+
+          {error && <p className="alert alert-warn">Todos los campos son obligatorios</p>}
+          {error2 && <p className="alert alert-error">Usuario o contraseña incorrectos</p>}
+
+          <button type="submit" className="btn">Entrar</button>
+        </form>
+      </main>
+
+      <aside className="brand-right">
+        <img src="/escom.png" alt="ESCOM" />
+      </aside>
+    </div>
+  );
 }
